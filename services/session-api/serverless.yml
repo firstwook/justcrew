@@ -1,0 +1,67 @@
+
+service: session-api
+
+custom: ${file(../../serverless.common.yml):custom}
+
+provider:
+  name: aws
+  runtime: nodejs10.x
+  region: ap-northeast-2
+  vpc:
+    securityGroupIds:
+      # serverless-justcrew-sg
+      - sg-02b1ea7ab657c021e
+    subnetIds:
+      # justcrew-subnet-public-1
+      - subnet-98547fd4
+      # justcrew-subnet-private-1
+      - subnet-0244671a6754d9972
+      # justcrew-subnet-private-2
+      - subnet-01fc88880cff51362
+  environment:
+    RDSMYSQL_HOST: ${self:custom.rdsMysqlHost.${self:custom.stage}}
+    RDSMYSQL_PORT: ${self:custom.rdsMysqlPort.${self:custom.stage}}
+    RDSMYSQL_USER: ${self:custom.rdsMysqlUser.${self:custom.stage}}
+    RDSMYSQL_PASSWORD: ${self:custom.rdsMysqlPassword.${self:custom.stage}}
+    RDSMYSQL_DATABASE: ${self:custom.rdsMysqlDatabase.${self:custom.stage}}
+
+functions:
+  list:
+    handler: list.main
+    events:
+      - http:
+          path: sessions
+          method: get
+
+  get:
+    handler: get.main
+    events:
+      - http:
+          path: sessions/{id}
+          method: get
+
+  create:
+    handler: create.main
+    events:
+      - http:
+          path: sessions
+          method: post
+
+  update:
+    handler: update.main
+    events:
+      - http:
+          path: sessions/{id}
+          method: put
+
+  delete:
+    handler: delete.main
+    events:
+      - http:
+          path: sessions/{id}
+          method: delete
+
+plugins:
+  - serverless-offline
+  - serverless-bundle
+  - serverless-stage-manager
